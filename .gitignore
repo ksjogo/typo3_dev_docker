@@ -1,0 +1,7 @@
+/bin
+/index.php
+/typo3
+/typo3_src
+/typo3conf
+/vendor
+composer.lock

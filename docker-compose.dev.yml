@@ -1,0 +1,10 @@
+version: "2"
+
+services:
+  typo3:
+    volumes:
+      - ./typo3_src:/var/www/html/typo3_src
+
+  db:
+    ports:
+      - 3306:3306
