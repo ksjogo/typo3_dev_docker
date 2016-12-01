@@ -25,7 +25,6 @@ RUN pecl install xdebug \
 
 # App
 ADD ./composer.json composer.json
-ADD ./composer.lock composer.lock
 RUN composer install
 RUN chmod +x vendor/helhum/typo3-console/Scripts/typo3cms
 

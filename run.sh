@@ -11,19 +11,18 @@ done
 
 vendor/helhum/typo3-console/Scripts/typo3cms install:generatepackagestates --activate-default=true
 vendor/helhum/typo3-console/Scripts/typo3cms install:setup --non-interactive \
-                                             --database-user-name="$MYSQL_USER" \
+                                             --database-user-name="root" \
                                              --database-host-name="$MYSQL_HOST" \
                                              --database-port="3306" \
                                              --database-name="$MYSQL_DATABASE" \
                                              --database-user-password="$MYSQL_PASSWORD" \
-                                             --database-create=0 \
+                                             --database-create=1 \
                                              --admin-user-name="$MYSQL_USER" \
                                              --admin-password="$MYSQL_PASSWORD" \
                                              --site-name="TYPO3 Importr Demo"
 
-vendor/helhum/typo3-console/Scripts/typo3cms extension:activate semantic_eye
 vendor/helhum/typo3-console/Scripts/typo3cms cache:flush
-vendor/helhum/typo3-console/Scripts/typo3cms extension:setupactivate
+vendor/helhum/typo3-console/Scripts/typo3cms extension:setupactive
 
 chown -R www-data:www-data /var/www/html
 apache2-foreground
