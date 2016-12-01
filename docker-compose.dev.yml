@@ -4,6 +4,7 @@ services:
   typo3:
     volumes:
       - ./typo3_src:/var/www/html/typo3_src
+      - ./typo3conf/ext:/var/www/html/typo3conf/ext
 
   db:
     ports:

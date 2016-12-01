@@ -2,17 +2,34 @@ version: "2"
 
 services:
   db:
-    image: 'mysql:5.5'
+    image: 'mysql:5'
+    command: 'mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci'
     environment:
       MYSQL_ROOT_PASSWORD: 'password'
-      MYSQL_USER: 'typo3'
-      MYSQL_PASSWORD: 'password'
+
+  PostgreSQL:
+    restart: always
+    image: sameersbn/postgresql:9.6-2
+    ports:
+      - "5432:5432"
+    environment:
+       DB_USER: 'root'
+       DB_PASS: 'password'
+       DB_NAME: 'typo3'
+
+  MSSQL:
+    image: microsoft/mssql-server-linux
+    ports:
+      - "1433:1433"
+    environment:
+       ACCEPT_EULA: 'Y'
+       SA_PASSWORD: 'password'
 
   typo3:
     build: '.'
     environment:
       MYSQL_HOST: 'db'
-      MYSQL_USER: 'typo3'
+      MYSQL_USER: 'root'
       MYSQL_PASSWORD: 'password'
       MYSQL_DATABASE: 'typo3'
       INSTALL_TOOL_PASSWORD: 'password'
@@ -21,3 +38,5 @@ services:
       - 8080:80
     links:
       - db
+      - PostgreSQL
+      - MSSQL
