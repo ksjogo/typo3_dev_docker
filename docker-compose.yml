@@ -23,7 +23,7 @@ services:
       - "1433:1433"
     environment:
        ACCEPT_EULA: 'Y'
-       SA_PASSWORD: 'password'
+       SA_PASSWORD: 'ThisIs10Passwords!'
 
   typo3:
     build: '.'
@@ -32,6 +32,7 @@ services:
       MYSQL_USER: 'root'
       MYSQL_PASSWORD: 'password'
       MYSQL_DATABASE: 'typo3'
+      SA_PASSWORD: 'ThisIs10Passwords!'
       INSTALL_TOOL_PASSWORD: 'password'
       XDEBUG_CONFIG: '${XDEBUG_CONFIG}'
     ports:
