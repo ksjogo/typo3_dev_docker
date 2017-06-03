@@ -15,11 +15,11 @@ RUN sudo pecl install sqlsrv-4.1.6.1 pdo_sqlsrv-4.1.6.1
 RUN echo "date.timezone = Europe/Berlin"  >> /usr/local/etc/php/php.ini
 RUN echo "extension=/usr/lib/php/20151012/pdo_pgsql.so"  >> /usr/local/etc/php/php.ini
 RUN echo "extension=pdo_sqlsrv.so"  >> /usr/local/etc/php/php.ini
+RUN echo "extension=/usr/local/lib/php/extensions/no-debug-non-zts-20151012/sqlsrv.so"  >> /usr/local/etc/php/php.ini
 
-# Install composer
-RUN bash -c "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\""
-RUN bash -c "php composer-setup.php --filename=composer --install-dir=/usr/local/bin"
-RUN bash -c "php -r \"unlink('composer-setup.php');\""
+RUN apt-get install -y locales \
+&& echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+&& locale-gen
 
 #xdebug
 RUN pecl install xdebug \
@@ -27,22 +27,16 @@ RUN pecl install xdebug \
 && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
 && echo "xdebug.remote_autostart=on" >> /usr/local/etc/php/conf.d/xdebug.ini
 
-# App
-ADD ./composer.json composer.json
-ADD ./composer.lock composer.lock
-RUN composer install
-RUN chmod +x vendor/helhum/typo3-console/Scripts/typo3cms
 
 ADD ./000-default.conf /etc/apache2/sites-enabled/000-default.conf
 EXPOSE 80
 RUN a2enmod rewrite
 
-RUN apt-get install -y locales \
-&& echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-&& locale-gen
-RUN echo "extension=/usr/local/lib/php/extensions/no-debug-non-zts-20151012/sqlsrv.so"  >> /usr/local/etc/php/php.ini
+# Install composer
+RUN bash -c "php -r \"copy('https://getcomposer.org/installer', 'composer-setup.php');\""
+RUN bash -c "php composer-setup.php --filename=composer --install-dir=/usr/local/bin"
+RUN bash -c "php -r \"unlink('composer-setup.php');\""
 
-ADD ./AdditionalConfiguration.php typo3conf/AdditionalConfiguration.php
+RUN apt-get update && apt-get install -y dnsutils
 ADD ./run.sh /run.sh
 CMD /run.sh
-RUN ln -s typo3_src/components components

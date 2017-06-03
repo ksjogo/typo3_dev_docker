@@ -3,6 +3,7 @@ ifeq ($(shell uname),Darwin)
 else
 	XDEBUG_CONFIG = "idekey=linux fixme"
 endif
+MSSQLIP=$(shell XDEBUG_CONFIG=1 docker-compose exec typo3 bash -c "nslookup MSSQL|grep -oP 'Address: \K.*'")
 
 # If the first argument is one of the supported commands...
 SUPPORTED_COMMANDS := console typo3unit typo3functional typo3functional_postgres typo3functional_mssql typo3functional_mssql_isolation typo3functional_mysql_isolation
@@ -16,20 +17,20 @@ endif
 	@:
 
 buildtypo3: ##build up-to-date typo3 image
-	@docker-compose -f docker-compose.yml -f docker-compose.dev.yml build typo3
+	@docker-compose  build typo3
 
 build: buildtypo3 ##build up-to-date docker images
 
 console: ## Trigger Symfony script bin/command
-	@export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3	\
+	@export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose exec typo3	\
 		vendor/helhum/typo3-console/Scripts/typo3cms $(COMMAND_ARGS)
 
 .PHONY: typo3
 typo3: ## Run the typo3 instance from docker compose
-	@export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml up typo3
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  up typo3
 
 typo3bash: ## Get a bash inside the typo3 instance
-	@export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose exec typo3 bash
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose exec typo3 bash
 
 typo3_prod: ## Run the typo3 instance from docker compose
 	@docker-compose -f docker-compose.yml up typo3
@@ -37,31 +38,33 @@ typo3_prod: ## Run the typo3 instance from docker compose
 .DEFAULT_GOAL := typo3
 
 typo3unit:
-	@export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3	\
+	@export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3	\
 		bin/phpunit -c typo3_src/typo3/sysext/core/Build/UnitTests.xml $(COMMAND_ARGS)
 
 typo3functional:
-	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3 \
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
 		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="$$MYSQL_USER" typo3DatabasePassword="$$MYSQL_PASSWORD" typo3DatabaseHost="$$MYSQL_HOST" && bin/phpunit --process-isolation --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
 
 typo3functional_postgres:
-	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3 \
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
 		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="$$MYSQL_USER" typo3DatabasePassword="$$MYSQL_PASSWORD" typo3DatabaseHost="PostgreSQL" typo3DatabaseDriver="pdo_pgsql" && bin/phpunit --process-isolation --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
 
 typo3functional_mssql:
-	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3 \
-		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="sa" typo3DatabasePassword="$$SA_PASSWORD" typo3DatabaseHost="172.18.0.2" typo3DatabaseDriver="sqlsrv" typo3DatabasePort="1433" && bin/phpunit  --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
+		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="sa" typo3DatabasePassword="$$SA_PASSWORD" typo3DatabaseHost="${MSSQLIP}" typo3DatabaseDriver="sqlsrv" typo3DatabasePort="1433" && bin/phpunit --exclude-group mysql   --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
 
 typo3functional_mssql_isolation:
-	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3 \
-		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="sa" typo3DatabasePassword="$$SA_PASSWORD" typo3DatabaseHost="172.18.0.2" typo3DatabaseDriver="sqlsrv" typo3DatabasePort="1433" && bin/phpunit --process-isolation --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
+		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="sa" typo3DatabasePassword="$$SA_PASSWORD" typo3DatabaseHost="${MSSQLIP}" typo3DatabaseDriver="sqlsrv" typo3DatabasePort="1433" && bin/phpunit --exclude-group mysql  --process-isolation --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
 
 typo3functional_mysql_isolation:
-	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3 \
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
 		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="$$MYSQL_USER" typo3DatabasePassword="$$MYSQL_PASSWORD" typo3DatabaseHost="$$MYSQL_HOST" && bin/phpunit --process-isolation --bootstrap components/testing_framework/Resources/Core/Build/FunctionalTestsBootstrap.php $(COMMAND_ARGS)'
 
-
+typo3functional_mssql_all:
+	export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
+		bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="sa" typo3DatabasePassword="$$SA_PASSWORD" typo3DatabaseHost="${MSSQLIP}" typo3DatabaseDriver="sqlsrv" typo3DatabasePort="1433" && bin/phpunit  --exclude-group mysql  components/testing_framework/Resources/Core/Build/FunctionalTests.php '
 
 #typo3functional_mssql_all:
-# export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec typo3 \
+# export XDEBUG_CONFIG=${XDEBUG_CONFIG} && docker-compose  exec typo3 \
 # 	bash -c 'cd typo3_src/ && export typo3DatabaseName="$$MYSQL_DATABASE" typo3DatabaseUsername="sa" typo3DatabasePassword="$$SA_PASSWORD" typo3DatabaseHost="MSSQL" typo3DatabaseDriver="pdo_sqlsrv" && bin/phpunit --process-isolation -c components/testing_framework/Resources/Core/Build/FunctionalTests.xml'

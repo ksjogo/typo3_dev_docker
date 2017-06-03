@@ -5,3 +5,6 @@
 /typo3conf
 /vendor
 composer.lock
+/typo3temp
+/fileadmin
+/uploads

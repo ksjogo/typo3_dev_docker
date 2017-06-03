@@ -26,7 +26,6 @@ then
 fi
 
 bin/typo3cms cache:flush
-bin/typo3cms extension:activate introduction
 bin/typo3cms extension:setupactive
 
 chown -R www-data:www-data /var/www/html
