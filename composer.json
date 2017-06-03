@@ -23,7 +23,7 @@
     }
   ],
   "require": {
-    "typo3/cms": "dev-master",
+    "typo3/cms": "dev-master as 8.7",
     "helhum/typo3-console": "dev-master"
   },
   "extra": {
